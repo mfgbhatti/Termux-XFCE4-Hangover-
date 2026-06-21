@@ -1,0 +1,122 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+
+PREFIX="/data/data/com.termux/files/usr"
+BIN_DIR="$PREFIX/bin"
+APP_DIR="$HOME/Desktop"
+
+echo "setting up storage"
+termux-setup-storage
+
+echo "updating repo"
+termux-change-repo
+
+echo "Updating Termux"
+pkg update -y
+pkg upgrade -y
+
+echo "Adding repositories"
+pkg install -y x11-repo tur-repo
+
+echo "Installing core utilities"
+pkg install -y wget curl git file which termux-am
+
+echo "Installing D-Bus and XFCE configuration"
+pkg install -y dbus dbus-x11 xfconf
+
+echo "Installing X11 packages"
+pkg install -y termux-x11-nightly xorg-xhost xorg-xrdb
+
+echo "Installing XFCE desktop"
+pkg install -y \
+  xfce4 \
+  xfce4-goodies \
+  xfce4-pulseaudio-plugin \
+  xfce4-battery-plugin \
+  xfce4-docklike-plugin \
+  xfce4-notifyd-static \
+  xfce4-cpugraph-plugin
+
+echo "Installing audio"
+pkg install -y pulseaudio
+
+echo "Installing graphics"
+pkg install -y mesa-vulkan-icd-freedreno clvk
+
+echo "Installing archive utilities"
+pkg install -y tar gzip xz-utils cabextract
+
+echo "Installing desktop applications"
+pkg install -y evince file-roller gnome-font-viewer galculator
+
+echo "Installing development libraries"
+pkg install -y libandroid-stub libpopt
+
+echo "Installing Hangover"
+pkg install -y hangover hangover-wine hangover-libwow64fex hangover-libarm64ecfex hangover-wowbox64
+
+cat > "$BIN_DIR/tx11start" <<'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+
+kill -9 $(pgrep -f termux.x11) 2>/dev/null
+kill -9 $(pgrep -x pulseaudio) 2>/dev/null
+kill -9 $(pgrep -x xfce4-session) 2>/dev/null
+
+pulseaudio --start \
+  --load="module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1" \
+  --exit-idle-time=-1
+
+export XDG_RUNTIME_DIR="${TMPDIR}"
+termux-x11 :0 >/dev/null 2>&1 &
+sleep 3
+
+am start --user 0 -n com.termux.x11/com.termux.x11.MainActivity >/dev/null 2>&1
+sleep 1
+
+export DISPLAY=:0
+export PULSE_SERVER=127.0.0.1
+
+dbus-launch --exit-with-session xfce4-session >/dev/null 2>&1 &
+EOF
+
+chmod +x "$BIN_DIR/tx11start"
+
+cat > "$BIN_DIR/tx11stop" <<'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+kill -9 $(pgrep -f termux.x11) 2>/dev/null
+kill -9 $(pgrep -x pulseaudio) 2>/dev/null
+kill -9 $(pgrep -x xfce4-session) 2>/dev/null
+EOF
+
+chmod +x "$BIN_DIR/tx11stop"
+
+mkdir -p "$APP_DIR"
+cat > "$APP_DIR/tx11stop.desktop" <<'EOF'
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Stop XFCE
+Comment=Kill or stop Termux GUI
+Exec=tx11stop
+Icon=system-shutdown
+Categories=System;
+Path=
+Terminal=false
+StartupNotify=false
+EOF
+
+wget -O "$BIN_DIR/winetricks" \
+  https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
+chmod +x "$BIN_DIR/winetricks"
+
+cat > "$BIN_DIR/winetricks-wrapper" <<'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+export WINEPREFIX="${WINEPREFIX:-$HOME/.wine}"
+export WINE="${WINE:-wine}"
+export WINESERVER="${WINESERVER:-wineserver}"
+exec winetricks "$@"
+EOF
+
+chmod +x "$BIN_DIR/winetricks-wrapper"
+
+echo "Done."
