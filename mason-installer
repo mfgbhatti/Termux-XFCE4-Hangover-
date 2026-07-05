@@ -1,0 +1,72 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# Install a pkg package and register it as a Mason-compatible binary for Neovim.
+
+set -u
+
+setup_package_for_mason() {
+  local package_name="$1"
+  local package_path mason_dir libexec_dir wrapper_script
+
+  if [ -z "$package_name" ]; then
+    echo "Usage: $(basename "$0") <package-name>" >&2
+    return 1
+  fi
+
+  echo "Starting setup for $package_name..."
+
+  # Step 1: Install the package
+  echo "Installing $package_name..."
+  if ! pacman -S --needed --noconfirm "$package_name"; then
+    echo "Failed to install $package_name." >&2
+    return 1
+  fi
+  echo "$package_name installed successfully."
+
+  # Step 2: Locate the binary
+  echo "Looking for the binary path of $package_name..."
+  package_path=$(command -v "$package_name") || {
+    echo "Failed to locate $package_name binary (it may install under a different name)." >&2
+    return 1
+  }
+  echo "Binary found at: $package_path"
+
+  # Step 3: Create Mason directories
+  mason_dir="$HOME/.local/share/nvim/mason/packages/$package_name"
+  libexec_dir="$mason_dir/libexec"
+
+  echo "Creating directories for Mason..."
+  if ! mkdir -p "$libexec_dir"; then
+    echo "Failed to create directories." >&2
+    return 1
+  fi
+  echo "Directories created at $libexec_dir."
+
+  # Step 4: Symlink the real binary into libexec
+  echo "Creating symbolic link for $package_name..."
+  if ! ln -sf "$package_path" "$libexec_dir/$package_name"; then
+    echo "Failed to create symbolic link." >&2
+    return 1
+  fi
+  echo "Symbolic link created successfully."
+
+  # Step 5: Create wrapper script Mason will call
+  echo "Creating wrapper script..."
+  wrapper_script="$mason_dir/$package_name"
+  cat > "$wrapper_script" << EOF
+#!/data/data/com.termux/files/usr/bin/bash
+exec "$libexec_dir/$package_name" "\$@"
+EOF
+
+  # Step 6: Make it executable
+  if ! chmod +x "$wrapper_script"; then
+    echo "Failed to make wrapper script executable." >&2
+    return 1
+  fi
+
+  echo
+  echo "✅ $package_name setup for Mason completed successfully."
+  echo "Wrapper : $wrapper_script"
+  echo "Binary  : $package_path"
+}
+
+setup_package_for_mason "$1"

@@ -1,0 +1,136 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+echo "creating wine link to hangover-wine"
+ln -sf /data/data/com.termux/files/usr/bin/hangover-wine /data/data/com.termux/files/usr/bin/wine
+echo "writing wineserver"
+cat << 'EOF' > "$BIN_DIR/wineserver"
+#!/data/data/com.termux/files/usr/bin/env sh
+exec /data/data/com.termux/files/usr/opt/hangover-wine/bin/wineserver "$@"
+EOF
+
+echo "Downloading winetricks"
+wget -O "$BIN_DIR/winetricks" \
+    https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
+chmod +x "$BIN_DIR/winetricks"
+
+echo "Creating desktop file"
+mkdir -p "$APP_DIR"
+cat > "$APP_DIR/photoshop.desktop" << 'EOF'
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Adobe Photoshop
+Comment=Launch Adobe Photoshop via Wine
+Exec=env HODLL=libwow64fex.dll wine "C:\\Program Files (x86)\\Adobe\\Adobe Photoshop CC 2017 (32 Bit)\\Photoshop.exe"
+Icon=photoshop
+Categories=Graphics;
+Path=
+Terminal=false
+StartupNotify=false
+EOF
+
+cat > "$BIN_DIR/hwrap" << 'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+#
+cmd="$(basename "$0")"
+#
+case "$cmd" in
+    hwfex)
+        # FEX for both x64 and x86
+        export HODLL64="libarm64ecfex.dll"
+        export HODLL="libwow64fex.dll"
+        ;;
+    hw64fex)
+        # FEX for x64 only
+        export HODLL64="libarm64ecfex.dll"
+        ;;
+    hw32fex)
+        # FEX for x86 only
+        export HODLL="libwow64fex.dll"
+        ;;
+    hwcpu)
+        # Native WoW64 CPU for x86
+        export HODLL="wow64cpu.dll"
+        ;;
+    hwbox)
+        # Box64-based x86 emulation
+        export HODLL="wowbox64.dll"
+        ;;
+    *)
+        echo "Unknown invocation: $cmd"
+
+        echo "Usage examples:"
+        echo "hwfex   for both x64 and x32"
+        echo "hw64fex for x64 and fex"
+        echo "hw32fex for x32 and fex"
+        echo "hwcpu   for x32 and native"
+        echo "hwbox   for x32 and box64"
+        exit 1
+        ;;
+esac
+
+exec wine "$@"
+EOF
+
+cat > "$BIN_DIR/wtwrap" << 'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+
+export WINE="/data/data/com.termux/files/usr/bin/hangover-wine"
+export WINESERVER="/data/data/com.termux/files/usr/opt/hangover-wine/bin/wineserver"
+export WINEPREFIX="$HOME/.wine"
+#
+cmd="$(basename "$0")"
+#
+case "$cmd" in
+    wtfex)
+        # FEX for both x64 and x86
+        export HODLL64="libarm64ecfex.dll"
+        export HODLL="libwow64fex.dll"
+        ;;
+    wt64fex)
+        # FEX for x64 only
+        export HODLL64="libarm64ecfex.dll"
+        ;;
+    wt32fex)
+        # FEX for x86 only
+        export HODLL="libwow64fex.dll"
+        ;;
+    wtcpu)
+        # Native WoW64 CPU for x86
+        export HODLL="wow64cpu.dll"
+        ;;
+    wtbox)
+        # Box64-based x86 emulation
+        export HODLL="wowbox64.dll"
+        ;;
+    *)
+        echo "Unknown invocation: $cmd"
+
+        echo "Usage examples:"
+        echo "wtfex   for both x64 and x32"
+        echo "wt64fex for x64 and fex"
+        echo "wt32fex for x32 and fex"
+        echo "wtcpu   for x32 and native"
+        echo "wtbox   for x32 and box64"
+        exit 1
+        ;;
+esac
+
+exec winetricks "$@"
+EOF
+
+chmod +x "$BIN_DIR/hwrap"
+chmod +x "$BIN_DIR/wtwrap"
+
+echo "Creating links"
+ln -sf "$BIN_DIR/hwrap" "$BIN_DIR/hwfex"
+ln -sf "$BIN_DIR/hwrap" "$BIN_DIR/hw64fex"
+ln -sf "$BIN_DIR/hwrap" "$BIN_DIR/hw32fex"
+ln -sf "$BIN_DIR/hwrap" "$BIN_DIR/hwcpu"
+ln -sf "$BIN_DIR/hwrap" "$BIN_DIR/hwbox"
+
+ln -sf "$BIN_DIR/wtwrap" "$BIN_DIR/wtfex"
+ln -sf "$BIN_DIR/wtwrap" "$BIN_DIR/wt64fex"
+ln -sf "$BIN_DIR/wtwrap" "$BIN_DIR/wt32fex"
+ln -sf "$BIN_DIR/wtwrap" "$BIN_DIR/wtcpu"
+ln -sf "$BIN_DIR/wtwrap" "$BIN_DIR/wtbox"
