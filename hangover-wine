@@ -2,6 +2,7 @@
 
 echo "creating wine link to hangover-wine"
 ln -sf /data/data/com.termux/files/usr/bin/hangover-wine /data/data/com.termux/files/usr/bin/wine
+
 echo "writing wineserver"
 cat << 'EOF' > "$BIN_DIR/wineserver"
 #!/data/data/com.termux/files/usr/bin/env sh
