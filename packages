@@ -4,84 +4,85 @@
 # Installing these meta-packages is what enables the repo on pkg;
 # on pacman, repos are assumed already enabled via pacman.conf.
 REPOS=(
-  x11-repo
-  tur-repo
+	x11-repo
+	tur-repo
 )
 
 BASE_PKGS=(
-  file
-  which
-  htop
-  xdg-user-dirs
-  fontconfig-utils
-  wget
-  curl
-  git
-  dbus
-  neovim
-  zsh
-  starship
-  build-essential
-  fzf
-  cabextract
-  pulseaudio
+	file
+	which
+	htop
+	xdg-user-dirs
+	fontconfig-utils
+	wget
+	curl
+	git
+	dbus
+	neovim
+	zsh
+	starship
+	build-essential
+	fzf
+	cabextract
+	pulseaudio
 )
 
 GUI_PKGS=(
-  mousepad
-  termux-x11-nightly
-  termux-api
-  termux-am
-  xorg-xhost
-  xorg-xrdb
-  file-roller # Optional: Archive manager
+	mousepad
+	termux-x11-nightly
+	termux-api
+	termux-am
+	xorg-xhost
+	xorg-xrdb
+	# file-roller # Optional: Archive manager
 )
 
 XFCE_PKGS=(
-  xfce4
-  xfce4-goodies
-  xfce4-pulseaudio-plugin # Optional: Volume indicator
+	xfce4
+	xfce4-goodies
+	xfce4-pulseaudio-plugin # Optional: Volume indicator
 )
 
 MATE_PKGS=(
-  mate
-  mate-terminal
-  mate-tweak
-  mate-utils
-  mate-system-monitor
-  mate-applet-brisk-menu
-  eom
-  engrampa
-  pluma
-  caja-extensions
+	mate
+	mate-terminal
+	mate-tweak
+	mate-utils
+	mate-system-monitor
+	mate-applet-brisk-menu
+	eom
+	engrampa
+	pluma
+	caja-extensions
 )
 
 PLASMA_PKGS=(
-  plasma
-  plasma-desktop
-  plasma-workspace
-  kwin-x11
-  breeze
-  breeze-gtk
-  aurorae
-  systemsettings
-  kscreen
-  dolphin
-  xfce4-terminal
-  xsettingsd
-  plasma-systemmonitor # Optional: System monitor
-  milou                # Optional: Search/indexing
+	plasma
+	plasma-desktop
+	plasma-workspace
+	kwin-x11
+	breeze
+	breeze-gtk
+	aurorae
+	systemsettings
+	kscreen
+	dolphin
+	gwenview
+	xfce4-terminal
+	xsettingsd
+	plasma-systemmonitor # Optional: System monitor
+	milou                # Optional: Search/indexing
 )
 
 GPU_PKGS=(
-  mesa-vulkan-icd-freedreno # Optional: Only for Adreno GPUs
-  clvk                      # Optional: Vulkan-backed OpenCL
+	mesa-vulkan-icd-freedreno # Optional: Only for Adreno GPUs
+	clvk                      # Optional: Vulkan-backed OpenCL
 )
 
 HANGOVER_PKGS=(
-  hangover
-  hangover-wine
-  hangover-libwow64fex
-  hangover-libarm64ecfex
-  hangover-wowbox64
+	hangover
+	hangover-wine
+	hangover-libwow64fex
+	hangover-libarm64ecfex
+	hangover-wowbox64
 )
